@@ -40,10 +40,8 @@ class MicropointAttenuator(HasTraits):
 
         type must be set to "log" or "linear".
 
-        We are assuming the linspace is perfectly logarithmic.  TODO:
-        It would be nice to create a new function,
-        "estimated_empirical_attenuation()" which uses sampled data to
-        populate additional Trait Properties.'''
+        We are assuming the linspace is perfectly logarithmic.
+        '''
         log_attn = linspace(self.min_magnitude,
                             self.max_magnitude,
                             self.divisions)
