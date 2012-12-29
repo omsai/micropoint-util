@@ -14,7 +14,7 @@ __email__ = "p.nanda@andor.com"
 from numpy import linspace, log10
 
 from traits.api import HasTraits, Range, Float, Property
-from traitsui.api import View, Item
+from traitsui.api import View, Group, Item
 
 
 class MicropointAttenuator(HasTraits):
@@ -22,45 +22,38 @@ class MicropointAttenuator(HasTraits):
                  max_magnitude=3, **traits):
         HasTraits.__init__(self, **traits)
         self.add_trait('division',
-                       Range(low=1, high=divisions, value=1))
+                       Range(low=1, high=divisions, value=1,
+                             mode='spinner'))
         self.divisions = divisions
         self.min_magnitude = min_magnitude
         self.max_magnitude = max_magnitude
     
-    # FIXME: `percent_transmission' should not be a Property.  There
-    # should be a way for the user to change `percent_transmission'
-    # and have `division change' in response, but perhaps this
-    # circular dependency resolution is not trivial.
     percent_transmission = Property(Float, depends_on=['division'])
-    # magnitude = Property(Float, depends_on=['division'])
     
-    def attenuations(self, type="linear"):
+    def attenuations(self):
         '''Returns array of transmission values for the mirror
         attenuator specifications.
-
-        type must be set to "log" or "linear".
-
-        We are assuming the linspace is perfectly logarithmic.
         '''
         log_attn = linspace(self.min_magnitude,
                             self.max_magnitude,
                             self.divisions)
-        if (type == "log"):
-            return log_attn
-        lin_attn = 10 ** log_attn
-        if (type == "linear"):
-            return lin_attn
+        linear_attn = 10 ** log_attn
+        return linear_attn
 
     def _get_percent_transmission(self):
         attn_array = self.attenuations()
         perc_attn_array = (attn_array / attn_array.max()) * 100
         return perc_attn_array[self.division - 1]
 
-    # def _get_magnitude
-
     view = View(
-        Item('division', label='Division'),
-        Item('percent_transmission', label='Transmission %')
+        Group(
+            Item('division', label='Index'),
+            Item('percent_transmission',label='Laser Transmission %',
+                 style='readonly', format_str = '%.2f'),
+            label = 'Attenuator Setting',
+            show_border = True
+            ),
+        title = 'Micropoint Power',
         )
 
 # If you want to simulate a manual attenuator, you could initialize
